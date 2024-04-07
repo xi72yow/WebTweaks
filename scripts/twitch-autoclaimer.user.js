@@ -6,8 +6,8 @@
 // @version     1.0
 // @author      xi72yow
 // @description Auto claim Twitch bonuses
-// @downloadURL https://github.com/xi72yow/WebTweaks/blob/master/scripts/twitch-autoclaimer.user.js
-// @updateURL   https://github.com/xi72yow/WebTweaks/blob/master/scripts/twitch-autoclaimer.user.js
+// @downloadURL https://raw.githubusercontent.com/xi72yow/WebTweaks/master/scripts/twitch-autoclaimer.user.js
+// @updateURL   https://raw.githubusercontent.com/xi72yow/WebTweaks/master/scripts/twitch-autoclaimer.user.js
 // ==/UserScript==
 
 let MutationObserver =

@@ -6,8 +6,8 @@
 // @version     1.0
 // @author      xi72yow
 // @description Reels (and other videos) in fullscreen mode Swipe Reels with Arrow Keys (Up/Down), Mute/Unmute with M
-// @downloadURL https://github.com/xi72yow/WebTweaks/blob/main/scripts/insta-power.user.js
-// @updateURL   https://github.com/xi72yow/WebTweaks/blob/main/scripts/insta-power.user.js
+// @downloadURL https://github.com/xi72yow/WebTweaks/blob/master/scripts/insta-power.user.js
+// @updateURL   https://github.com/xi72yow/WebTweaks/blob/master/scripts/insta-power.user.js
 // ==/UserScript==
 
 window.isFullScreen = window.matchMedia("(display-mode: fullscreen)").matches;

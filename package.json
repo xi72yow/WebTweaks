@@ -1,0 +1,12 @@
+{
+  "name": "web-tweaks",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "http-server -c5"
+  },
+  "keywords": [],
+  "author": "xi72yow",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Get the list of modified .user.js files
+modified_files=$(git diff --cached --name-only | grep -E '\.user\.js$')
+
+# Loop through each modified file
+for file in $modified_files; do
+    # Check if the file begins with the UserScript header
+    if head -n 10 "$file" | grep -qE '^// ==UserScript=='; then
+        # Extract the version number using sed
+        version=$(sed -n 's/^\/\/ @version\s*//p' "$file")
+        echo "Version number of $file: $version"
+
+        #unstage the file
+        git reset "$file"
+
+        # Increment the version number
+        new_version=$(echo "$version" | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+        # Replace the version number in the file
+        sed -i "s/^\/\/ @version\s*$version$/\/\/ @version $new_version/" "$file"
+        # Add the file back to the staging area
+        git add "$file"
+
+        echo "Bumped version number to $new_version in $file"
+    fi
+done
+
+exit 0

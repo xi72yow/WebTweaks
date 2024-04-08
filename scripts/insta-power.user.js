@@ -3,7 +3,7 @@
 // @namespace   xi72yow
 // @match       https://www.instagram.com/*
 // @grant       none
-// @version     1.0
+// @version 1.1
 // @author      xi72yow
 // @description Reels (and other videos) in fullscreen mode Swipe Reels with Arrow Keys (Up/Down), Mute/Unmute with M
 // @downloadURL https://raw.githubusercontent.com/xi72yow/WebTweaks/master/scripts/insta-power.user.js
@@ -76,20 +76,20 @@ document.addEventListener("keydown", (event) => {
   }
 
   if (event.key === "ArrowUp") {
-    const next =
+    const nextSvg =
       document.querySelector('[aria-label="Weiter"]') ||
       document.querySelector('[aria-label="Next"]');
-    if (next) {
-      next.click();
+    if (nextSvg) {
+      nextSvg.parentElement.click();
     }
   }
 
   if (event.key === "ArrowDown") {
-    const previous =
+    const previousSvg =
       document.querySelector('[aria-label="Zurück"]') ||
       document.querySelector('[aria-label="Go back"]');
-    if (previous) {
-      previous.click();
+    if (previousSvg) {
+      previousSvg.parentElement.click();
     }
   }
 });

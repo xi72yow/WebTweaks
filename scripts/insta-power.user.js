@@ -74,4 +74,22 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "m") {
     toggleMute();
   }
+
+  if (event.key === "ArrowUp") {
+    const next =
+      document.querySelector('[aria-label="Weiter"]') ||
+      document.querySelector('[aria-label="Next"]');
+    if (next) {
+      next.click();
+    }
+  }
+
+  if (event.key === "ArrowDown") {
+    const previous =
+      document.querySelector('[aria-label="Zurück"]') ||
+      document.querySelector('[aria-label="Go back"]');
+    if (previous) {
+      previous.click();
+    }
+  }
 });

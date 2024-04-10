@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name        Twitch Auto Claimer
 // @namespace   xi72yow
-// @match       https://www.twitch.tv/
+// @match       https://www.twitch.tv/*
 // @grant       none
-// @version     1.0
+// @version 1.1
 // @author      xi72yow
 // @description Auto claim Twitch bonuses
 // @downloadURL https://raw.githubusercontent.com/xi72yow/WebTweaks/master/scripts/twitch-autoclaimer.user.js

@@ -2,7 +2,8 @@
   "name": "web-tweaks",
   "version": "1.0.0",
   "scripts": {
-    "dev": "http-server -c5"
+    "dev": "http-server -c5",
+    "prepare": "chmod +x .hooks/pre-commit && chmod +x .hooks/commit-msg && git config core.hooksPath .hooks"
   },
   "keywords": [],
   "author": "xi72yow",

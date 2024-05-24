@@ -1,0 +1,20 @@
+#!/bin/bash
+
+commit_msg_file=$1
+
+# Read the commit message from the file
+commit_msg=$(cat "$commit_msg_file")
+
+# Define the regex pattern for conventional commits
+pattern="^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?: .+"
+
+# Check if the commit message matches the pattern
+if [[ ! $commit_msg =~ $pattern ]]; then
+    echo "Error: Commit message does not follow conventional commit format"
+    echo "Please use the format: <type>(<scope>): <description>"
+    echo "Example: feat(login): add validation for email field"
+    exit 1
+fi
+
+# If the commit message matches the pattern, exit successfully
+exit 0

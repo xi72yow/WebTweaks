@@ -59,12 +59,30 @@
 
   // MutationObserver
   const observer = new MutationObserver(setSpeed);
-  if (document.body) {
-    observer.observe(document.body, { childList: true, subtree: true });
-  } else {
-    document.addEventListener("DOMContentLoaded", () => {
+
+  // Function to start observing
+  function startObserving() {
+    if (document.body) {
       observer.observe(document.body, { childList: true, subtree: true });
-    });
+    }
+  }
+
+  // Try to start observing immediately
+  startObserving();
+
+  // Also try when DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startObserving);
+  }
+
+  // Fallback for edge cases
+  if (!document.body) {
+    const checkBody = setInterval(() => {
+      if (document.body) {
+        startObserving();
+        clearInterval(checkBody);
+      }
+    }, 100);
   }
 
   // Events

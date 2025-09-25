@@ -1,0 +1,21 @@
+Schlechte Nachrichten**: Unter Wayland funktioniert die Fenster-Positionierung grundsätzlich nicht!
+
+Wayland wurde bewusst so entwickelt, dass Anwendungen **keine Kontrolle** über ihre Fensterposition haben. Das ist eine Sicherheits- und Design-Entscheidung. Der Wayland-Compositor (GNOME, KDE, etc.) entscheidet allein, wo Fenster erscheinen.
+
+Das bedeutet:
+- `chrome.windows.create` mit `left` und `top` Parametern wird unter Wayland **ignoriert**
+- Chrome kann die Position nicht setzen
+- Das ist kein Bug, sondern Absicht
+
+## Mögliche Alternativen:
+
+1. **Wechsel zu X11**: Wenn du temporär zu X11 wechselst (bei der Anmeldung auswählbar), funktioniert die Positionierung
+
+2. **Tiling Window Manager**: Nutze einen Tiling Window Manager oder eine Extension für GNOME/KDE die Fenster automatisch anordnet
+
+3. **Alternative Lösung für die Extension**: Statt mehrere Fenster zu öffnen, könnten wir:
+   - Alle Streams in einem Fenster mit mehreren Tabs öffnen
+   - Eine HTML-Seite mit allen Streams in iframes erstellen
+   - Einen externen Player wie mpv mit yt-dlp verwenden
+
+Soll ich eine der Alternativen implementieren?

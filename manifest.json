@@ -1,24 +1,31 @@
 {
-    "manifest_version": 3,
-    "name": "WebTweaks",
-    "version": "1.0",
-    "description": "A web extension to tweak web pages.",
-    "action": {
-        "default_popup": "popup.html",
-        "default_title": "WebTweaks"
+  "manifest_version": 3,
+  "name": "WebTweaks",
+  "version": "1.0",
+  "description": "A web extension to tweak web pages.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "WebTweaks"
+  },
+  "permissions": ["storage", "tabs", "identity", "webRequest"],
+  "host_permissions": ["https://api.twitch.tv/*", "https://id.twitch.tv/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.twitch.tv/*"],
+      "js": ["content-scripts/twitch-autoclaimer.user.js"]
     },
-    "permissions": [
-        "storage",
-        "tabs"
-    ],
-    "content_scripts": [
-        {
-            "matches": [
-                "*://*.twitch.tv/*"
-            ],
-            "js": [
-                "scripts/twitch-autoclaimer.user.js"
-            ]
-        }
-    ]
+    {
+      "matches": ["*://*.instagram.com/*"],
+      "js": ["content-scripts/insta-power.user.js"]
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-scripts/video-speed.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
 }

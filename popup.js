@@ -467,11 +467,14 @@ async function loadFollowedChannels() {
 
       channelDiv.innerHTML = content;
 
-      // Add click handler to open individual channel
+      // Add click handler to open individual channel in new window
       channelDiv.style.cursor = "pointer";
       channelDiv.addEventListener("click", () => {
-        chrome.tabs.create({
+        chrome.windows.create({
           url: `https://twitch.tv/${channel.broadcaster_login}`,
+          type: "normal",
+          state: "maximized",
+          focused: true,
         });
       });
 

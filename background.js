@@ -3,14 +3,23 @@
 // Initialize default settings on install
 chrome.runtime.onInstalled.addListener(() => {
   // Set default video speed settings
-  chrome.storage.sync.get(["speedRules", "globalSpeed"], (result) => {
-    if (!result.globalSpeed) {
-      chrome.storage.sync.set({ globalSpeed: 1.5 });
-    }
-    if (!result.speedRules) {
-      chrome.storage.sync.set({ speedRules: {} });
-    }
-  });
+  chrome.storage.sync.get(
+    ["speedRules", "globalSpeed", "zoomPreset", "customZoomValue"],
+    (result) => {
+      if (!result.globalSpeed) {
+        chrome.storage.sync.set({ globalSpeed: 1.5 });
+      }
+      if (!result.speedRules) {
+        chrome.storage.sync.set({ speedRules: {} });
+      }
+      if (!result.zoomPreset) {
+        chrome.storage.sync.set({ zoomPreset: "none" });
+      }
+      if (!result.customZoomValue) {
+        chrome.storage.sync.set({ customZoomValue: 100 });
+      }
+    },
+  );
 });
 
 // Handle tab updates to apply speed rules

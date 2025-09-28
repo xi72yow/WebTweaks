@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>WebTweaks Dashboard</title>
+        <title>WebTweaks</title>
         <style>
             * {
                 margin: 0;
@@ -12,62 +12,61 @@
             }
 
             body {
+                width: 400px;
+                max-height: 600px;
+                background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+                color: #f0f0f0;
                 font-family:
                     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                    Oxygen, Ubuntu, sans-serif;
-                width: 400px;
-                min-height: 500px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    "Helvetica Neue", Arial, sans-serif;
+                overflow-y: auto;
             }
 
             .container {
-                padding: 20px;
+                padding: 0;
                 position: relative;
             }
 
             h2 {
-                color: white;
-                font-size: 24px;
-                margin-bottom: 20px;
                 text-align: center;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+                padding: 15px;
+                background: rgba(0, 0, 0, 0.3);
+                margin-bottom: 10px;
+                font-size: 18px;
+                letter-spacing: 2px;
             }
 
             #openInWindow {
                 position: absolute;
-                top: 0;
-                right: 0;
-                width: 36px;
-                height: 36px;
-                background: rgba(255, 255, 255, 0.2);
-                border: 2px solid rgba(255, 255, 255, 0.8);
-                color: white;
-                border-radius: 8px;
+                top: 15px;
+                right: 15px;
+                background: transparent;
+                border: 1px solid #555;
+                color: #aaa;
+                padding: 4px 8px;
+                border-radius: 4px;
                 cursor: pointer;
-                font-size: 18px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.3s;
+                font-size: 11px;
+                transition: all 0.2s;
+                z-index: 10;
             }
 
             #openInWindow:hover {
-                background: rgba(255, 255, 255, 0.3);
-                transform: scale(1.1);
+                border-color: #777;
+                color: #fff;
             }
 
             .section {
-                background: white;
-                border-radius: 12px;
-                padding: 20px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-                margin-bottom: 15px;
+                padding: 15px;
+                margin-bottom: 10px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 8px;
             }
 
             h3 {
-                color: #333;
-                font-size: 18px;
                 margin-bottom: 15px;
+                font-size: 16px;
+                color: #fff;
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -75,95 +74,89 @@
 
             .input-group {
                 display: flex;
-                gap: 8px;
-                margin-bottom: 15px;
+                gap: 10px;
+                margin-bottom: 10px;
             }
 
             input[type="text"],
             input[type="number"],
             input[type="password"] {
                 flex: 1;
-                padding: 10px 12px;
-                border: 2px solid #e0e0e0;
-                border-radius: 8px;
-                font-size: 14px;
-                transition: border-color 0.3s;
+                padding: 8px;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid #444;
+                color: #fff;
+                border-radius: 4px;
             }
 
             input:focus {
                 outline: none;
-                border-color: #667eea;
+                border-color: #007acc;
             }
 
             .btn {
-                padding: 10px 16px;
+                padding: 8px 16px;
+                background: #333;
+                color: #fff;
                 border: none;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: 600;
+                border-radius: 4px;
                 cursor: pointer;
-                transition: all 0.3s;
+                transition: all 0.2s;
             }
 
             .btn-add {
-                background: #667eea;
-                color: white;
-                width: 40px;
-                font-size: 20px;
+                background: #4caf50;
+                padding: 8px 12px;
+                font-weight: bold;
             }
 
             .btn-add:hover {
-                background: #5a67d8;
-                transform: scale(1.05);
+                background: #5cbf60;
             }
 
             .btn-primary {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
+                background: linear-gradient(135deg, #007acc, #005a99);
+                font-weight: 500;
+                margin-top: 10px;
                 width: 100%;
-                margin-top: 15px;
-                padding: 12px;
             }
 
             .btn-primary:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+                background: linear-gradient(135deg, #0086dd, #0066aa);
             }
 
             .btn-small {
-                background: #f0f0f0;
-                color: #666;
-                padding: 6px 12px;
+                padding: 4px 8px;
                 font-size: 12px;
+                background: #444;
             }
 
             .btn-small:hover {
-                background: #e0e0e0;
+                background: #555;
             }
 
-            /* Video Speed Controller Styles */
+            /* Speed Control Styles */
             .speed-section {
-                margin-bottom: 20px;
+                margin-bottom: 15px;
             }
 
             .current-site {
-                background: #f8f9fa;
-                padding: 10px;
-                border-radius: 8px;
+                background: rgba(0, 0, 0, 0.2);
+                padding: 12px;
+                border-radius: 6px;
                 margin-bottom: 15px;
             }
 
             .site-info {
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
                 margin-bottom: 10px;
+                font-size: 13px;
             }
 
             .site-url {
-                font-size: 14px;
-                color: #666;
-                word-break: break-all;
+                color: #4caf50;
+                font-weight: 500;
             }
 
             .speed-control {
@@ -174,36 +167,66 @@
 
             .speed-slider {
                 flex: 1;
-                -webkit-appearance: none;
-                appearance: none;
-                height: 6px;
-                border-radius: 3px;
-                background: #ddd;
+                height: 4px;
+                background: #444;
                 outline: none;
+                -webkit-appearance: none;
+                border-radius: 2px;
             }
 
             .speed-slider::-webkit-slider-thumb {
                 -webkit-appearance: none;
-                appearance: none;
-                width: 18px;
-                height: 18px;
+                width: 16px;
+                height: 16px;
+                background: #007acc;
                 border-radius: 50%;
-                background: #667eea;
                 cursor: pointer;
             }
 
             .speed-value {
-                min-width: 45px;
-                font-weight: 600;
-                color: #667eea;
+                min-width: 40px;
+                text-align: right;
+                font-weight: bold;
+            }
+
+            /* Zoom Button Styles */
+            .zoom-buttons {
+                display: flex;
+                gap: 8px;
+                margin-top: 12px;
+            }
+
+            .zoom-btn {
+                flex: 1;
+                padding: 8px;
+                background: #3a3a3a;
+                color: #bbb;
+                border: 2px solid transparent;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 500;
+                transition: all 0.2s;
+            }
+
+            .zoom-btn:hover {
+                background: #4a4a4a;
+                color: #fff;
+            }
+
+            .zoom-btn.active {
+                border-color: #007acc;
+                background: #4a4a4a;
+                color: #fff;
             }
 
             .speed-rules {
                 max-height: 200px;
                 overflow-y: auto;
-                border: 1px solid #e0e0e0;
-                border-radius: 8px;
-                padding: 8px;
+                background: rgba(0, 0, 0, 0.2);
+                padding: 10px;
+                border-radius: 4px;
+                margin-bottom: 10px;
             }
 
             .rule-item {
@@ -211,69 +234,68 @@
                 align-items: center;
                 justify-content: space-between;
                 padding: 8px;
-                margin-bottom: 6px;
-                background: #f8f9fa;
-                border-radius: 6px;
+                background: rgba(255, 255, 255, 0.05);
+                margin-bottom: 5px;
+                border-radius: 4px;
             }
 
             .rule-url {
                 flex: 1;
+                color: #4caf50;
                 font-size: 13px;
-                color: #333;
-                word-break: break-all;
+                margin-right: 10px;
             }
 
             .rule-speed {
-                font-weight: 600;
-                color: #667eea;
-                margin: 0 10px;
+                margin-right: 10px;
+                font-weight: bold;
             }
 
             .remove-btn {
-                background: transparent;
+                background: #f44336;
+                color: white;
                 border: none;
-                color: #dc3545;
-                font-size: 20px;
+                padding: 2px 8px;
+                border-radius: 3px;
                 cursor: pointer;
-                padding: 0 5px;
-                transition: transform 0.2s;
+                font-size: 14px;
             }
 
             .remove-btn:hover {
-                transform: scale(1.2);
+                background: #d32f2f;
             }
 
             .empty-state {
                 text-align: center;
-                color: #999;
+                color: #777;
                 padding: 20px;
                 font-style: italic;
             }
 
             .tabs {
                 display: flex;
-                margin-bottom: 20px;
-                background: #f0f0f0;
-                border-radius: 8px;
-                padding: 4px;
+                background: rgba(0, 0, 0, 0.3);
+                padding: 5px;
+                gap: 5px;
+                margin-bottom: 10px;
             }
 
             .tab {
                 flex: 1;
                 padding: 10px;
-                background: transparent;
+                background: rgba(255, 255, 255, 0.05);
                 border: none;
+                color: #aaa;
                 cursor: pointer;
-                font-weight: 600;
-                color: #666;
-                border-radius: 6px;
-                transition: all 0.3s;
+                border-radius: 4px;
+                transition: all 0.2s;
+                font-size: 14px;
             }
 
             .tab.active {
-                background: white;
-                color: #667eea;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                background: rgba(0, 122, 204, 0.3);
+                color: #fff;
+                font-weight: 500;
             }
 
             .tab-content {
@@ -285,16 +307,16 @@
             }
 
             .global-speed {
-                background: #e8f5e9;
+                background: rgba(0, 122, 204, 0.1);
                 padding: 10px;
-                border-radius: 8px;
-                margin-bottom: 15px;
+                border-radius: 4px;
+                margin-bottom: 10px;
             }
 
             .add-rule-form {
                 display: flex;
-                gap: 8px;
-                margin-top: 15px;
+                gap: 5px;
+                margin-top: 10px;
             }
 
             #newRuleUrl {
@@ -302,12 +324,12 @@
             }
 
             #newRuleSpeed {
-                width: 80px;
+                flex: 1;
             }
 
-            /* Keep existing Twitch styles */
+            /* Twitch Styles */
             .channels-container {
-                margin: 15px 0;
+                margin-top: 15px;
             }
 
             .channels-header {
@@ -316,97 +338,95 @@
                 align-items: center;
                 margin-bottom: 10px;
                 padding: 8px;
-                background: #f8f9fa;
-                border-radius: 8px;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 4px;
             }
 
             #liveCount {
-                font-size: 14px;
-                font-weight: 600;
-                color: #666;
+                color: #4caf50;
+                font-weight: bold;
+                font-size: 13px;
             }
 
             .channels-list {
-                max-height: 200px;
+                max-height: 300px;
                 overflow-y: auto;
-                border: 1px solid #e0e0e0;
-                border-radius: 8px;
-                padding: 8px;
+                background: rgba(0, 0, 0, 0.2);
+                padding: 10px;
+                border-radius: 4px;
             }
 
             .channel-item {
                 display: flex;
                 align-items: center;
                 padding: 8px;
-                margin-bottom: 6px;
-                background: #f8f9fa;
-                border-radius: 6px;
-                transition: background 0.3s;
+                background: rgba(255, 255, 255, 0.05);
+                margin-bottom: 5px;
+                border-radius: 4px;
+                transition: all 0.2s;
             }
 
             .channel-item:hover {
-                background: #e9ecef;
+                background: rgba(255, 255, 255, 0.1);
             }
 
             .channel-name {
                 flex: 1;
-                font-size: 14px;
-                color: #333;
-                font-weight: 500;
+                margin-left: 10px;
+                font-size: 13px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .status-indicator {
-                width: 10px;
-                height: 10px;
+                width: 8px;
+                height: 8px;
                 border-radius: 50%;
-                margin-right: 10px;
-                transition: all 0.3s;
+                background: #555;
+                flex-shrink: 0;
             }
 
             .status-indicator.offline {
-                background: #dc3545;
+                background: #555;
             }
 
             .status-indicator.online {
-                background: #28a745;
+                background: #4caf50;
                 animation: pulse 2s infinite;
             }
 
             .status-indicator.checking {
-                background: #ffc107;
-                animation: spin 1s linear infinite;
+                background: #ff9800;
+                animation: pulse 1s infinite;
             }
 
             @keyframes pulse {
                 0% {
-                    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+                    opacity: 1;
+                    transform: scale(1);
                 }
-                70% {
-                    box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+                50% {
+                    opacity: 0.7;
+                    transform: scale(1.2);
                 }
                 100% {
-                    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+                    opacity: 1;
+                    transform: scale(1);
                 }
             }
 
-            @keyframes spin {
-                from {
-                    transform: rotate(0deg);
-                }
-                to {
-                    transform: rotate(360deg);
-                }
-            }
-
+            /* Login section */
             .login-section {
-                text-align: center;
-                padding: 20px;
+                padding: 15px;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 4px;
             }
 
             .login-prompt {
-                color: #666;
-                margin-bottom: 20px;
+                margin-bottom: 15px;
                 font-size: 14px;
+                color: #aaa;
             }
 
             .user-info {
@@ -414,50 +434,51 @@
                 justify-content: space-between;
                 align-items: center;
                 padding: 10px;
-                background: #f0f4f8;
-                border-radius: 8px;
-                margin-bottom: 15px;
+                background: rgba(0, 122, 204, 0.1);
+                border-radius: 4px;
+                margin-bottom: 10px;
             }
 
             .user-name {
-                font-weight: 600;
-                color: #333;
+                font-weight: 500;
+                color: #4caf50;
             }
 
             .loading {
                 text-align: center;
-                color: #666;
                 padding: 20px;
+                color: #aaa;
                 font-style: italic;
             }
 
             .channel-item.live {
-                background: #e8f5e9;
-                border-left: 3px solid #28a745;
+                background: rgba(76, 175, 80, 0.1);
+                border-left: 3px solid #4caf50;
             }
 
             .viewer-count {
-                background: #dc3545;
+                background: rgba(255, 0, 0, 0.8);
                 color: white;
                 padding: 2px 6px;
-                border-radius: 12px;
+                border-radius: 3px;
                 font-size: 11px;
-                font-weight: 600;
-                margin-left: 8px;
+                margin-right: 8px;
+                font-weight: bold;
             }
 
             .game-name {
-                color: #666;
-                font-size: 12px;
+                font-size: 11px;
+                color: #aaa;
                 margin-left: 8px;
             }
 
             .token-steps {
-                text-align: left;
-                margin: 15px 0;
-                padding-left: 20px;
-                font-size: 13px;
-                line-height: 1.8;
+                background: rgba(0, 0, 0, 0.3);
+                padding: 10px;
+                border-radius: 4px;
+                margin-bottom: 15px;
+                font-size: 12px;
+                line-height: 1.6;
             }
 
             .token-steps li {
@@ -465,15 +486,15 @@
             }
 
             .token-steps code {
-                background: #f0f0f0;
+                background: rgba(0, 122, 204, 0.2);
                 padding: 2px 6px;
                 border-radius: 3px;
+                color: #4caf50;
                 font-family: monospace;
-                color: #d73a49;
             }
 
             .token-steps a {
-                color: #667eea;
+                color: #007acc;
                 text-decoration: none;
             }
 
@@ -483,41 +504,43 @@
 
             #tokenInput {
                 width: 100%;
-                margin: 10px 0;
+                margin-bottom: 10px;
             }
 
             .token-fields {
-                margin: 20px 0;
+                margin-bottom: 15px;
             }
 
             .token-fields label {
                 display: block;
-                margin-top: 12px;
                 margin-bottom: 5px;
-                font-size: 13px;
-                color: #555;
-                font-weight: 500;
+                font-size: 12px;
+                color: #aaa;
+                margin-top: 10px;
             }
 
             .token-fields input {
                 width: 100%;
-                padding: 8px 12px;
-                border: 2px solid #e0e0e0;
-                border-radius: 6px;
-                font-size: 13px;
-                margin-bottom: 10px;
+                padding: 8px;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid #444;
+                color: #fff;
+                border-radius: 4px;
+                font-family: monospace;
+                font-size: 12px;
             }
 
             .token-fields input:focus {
                 outline: none;
-                border-color: #667eea;
+                border-color: #007acc;
             }
 
             .token-info {
-                background: #f8f9fa;
+                background: rgba(0, 122, 204, 0.1);
                 padding: 10px;
-                border-radius: 6px;
+                border-radius: 4px;
                 margin-bottom: 15px;
+                border-left: 3px solid #007acc;
             }
 
             .token-info p {
@@ -526,8 +549,8 @@
             }
 
             .small-text {
-                font-size: 12px !important;
-                color: #666;
+                font-size: 11px;
+                color: #888;
             }
 
             .button-group {
@@ -543,20 +566,20 @@
     </head>
     <body>
         <div class="container">
-            <button id="openInWindow" title="In neuem Fenster öffnen">⬈</button>
-            <h2>WebTweaks Dashboard</h2>
+            <button id="openInWindow" title="In neuem Fenster öffnen">⧉</button>
+            <h2>🚀 WebTweaks</h2>
 
             <div class="tabs">
                 <button class="tab active" data-tab="speed">
-                    🎬 Video Speed
+                    ⚡ Video Speed
                 </button>
                 <button class="tab" data-tab="twitch">🎮 Twitch</button>
             </div>
 
-            <!-- Video Speed Tab -->
+            <!-- Speed Tab -->
             <div id="speedTab" class="tab-content active">
                 <div class="section">
-                    <h3>🎬 Video Speed Controller</h3>
+                    <h3>⚡ Video Speed Controller</h3>
 
                     <div class="current-site">
                         <div class="site-info">
@@ -576,6 +599,56 @@
                             <span id="currentSpeedValue" class="speed-value"
                                 >1.5x</span
                             >
+                        </div>
+                        <div
+                            class="zoom-buttons"
+                            style="display: flex; gap: 6px; flex-wrap: wrap"
+                        >
+                            <button
+                                id="quickZoomReset"
+                                class="zoom-btn active"
+                                data-zoom="100"
+                                title="Original 16:9 - Volle Qualität mit schwarzen Balken"
+                                style="flex: 1; min-width: 60px"
+                            >
+                                16:9
+                            </button>
+                            <button
+                                id="quickZoom21Soft"
+                                class="zoom-btn"
+                                data-zoom="120"
+                                title="21:9 Soft - Leichter Zoom, weniger Crop"
+                                style="flex: 1; min-width: 60px"
+                            >
+                                21:9 Soft
+                            </button>
+                            <button
+                                id="quickZoom21"
+                                class="zoom-btn"
+                                data-zoom="131"
+                                title="21:9 - Exakter Ultrawide Crop"
+                                style="flex: 1; min-width: 60px"
+                            >
+                                21:9
+                            </button>
+                            <button
+                                id="quickZoom32Soft"
+                                class="zoom-btn"
+                                data-zoom="140"
+                                title="32:9 Soft - Moderater Zoom"
+                                style="flex: 1; min-width: 60px"
+                            >
+                                32:9 Soft
+                            </button>
+                            <button
+                                id="quickZoom32"
+                                class="zoom-btn"
+                                data-zoom="200"
+                                title="32:9 - Voller Super Ultrawide Crop"
+                                style="flex: 1; min-width: 60px"
+                            >
+                                32:9
+                            </button>
                         </div>
                         <button id="saveCurrentSpeed" class="btn btn-primary">
                             Für diese Seite speichern
@@ -644,6 +717,56 @@
                         />
                         <button id="addRuleBtn" class="btn btn-add">+</button>
                     </div>
+
+                    <!-- Custom Zoom Control -->
+                    <div
+                        style="
+                            margin-top: 20px;
+                            padding-top: 20px;
+                            border-top: 1px solid #333;
+                        "
+                    >
+                        <h4
+                            style="
+                                margin: 0 0 10px 0;
+                                font-size: 13px;
+                                color: #666;
+                            "
+                        >
+                            Custom Zoom
+                        </h4>
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 10px;
+                            "
+                        >
+                            <input
+                                type="range"
+                                id="customZoom"
+                                min="100"
+                                max="200"
+                                value="100"
+                                step="5"
+                                class="speed-slider"
+                                style="flex: 1"
+                            />
+                            <span
+                                id="customZoomValue"
+                                class="speed-value"
+                                style="min-width: 45px"
+                                >100%</span
+                            >
+                            <button
+                                id="applyCustomZoom"
+                                class="btn btn-small"
+                                style="padding: 4px 12px"
+                            >
+                                Anwenden
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -674,7 +797,7 @@
                             <input
                                 type="password"
                                 id="accessTokenInput"
-                                placeholder="Access Token einfügen..."
+                                placeholder="Dein Access Token"
                             />
 
                             <label for="refreshTokenInput"
@@ -683,30 +806,25 @@
                             <input
                                 type="password"
                                 id="refreshTokenInput"
-                                placeholder="Refresh Token einfügen..."
+                                placeholder="Dein Refresh Token (optional)"
                             />
 
                             <label for="clientIdInput">Client ID:</label>
                             <input
                                 type="text"
                                 id="clientIdInput"
-                                placeholder="Client ID einfügen..."
-                                value="gp762nuuoqcoxypju8c569th9wz7q5"
+                                placeholder="Deine Client ID"
                             />
                         </div>
 
                         <button id="loginButton" class="btn btn-primary">
-                            🔐 Token speichern
+                            Verbinden
                         </button>
                     </div>
 
-                    <div
-                        id="userSection"
-                        class="user-section"
-                        style="display: none"
-                    >
+                    <div id="userSection" style="display: none">
                         <div class="user-info">
-                            <span id="userName" class="user-name"></span>
+                            <span id="userName">Lade...</span>
                             <button id="logoutButton" class="btn btn-small">
                                 Abmelden
                             </button>
@@ -714,34 +832,33 @@
 
                         <div class="channels-container">
                             <div class="channels-header">
-                                <span id="liveCount">Lade Kanäle...</span>
+                                <span id="liveCount">0 Live</span>
                                 <button
                                     id="refreshButton"
                                     class="btn btn-small"
                                 >
-                                    🔄 Aktualisieren
+                                    Aktualisieren
                                 </button>
                             </div>
-                            <div id="channelsList" class="channels-list">
-                                <div class="loading">
-                                    Lade gefolgte Kanäle...
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="button-group">
-                            <button
-                                id="openLiveStreams"
-                                class="btn btn-primary"
-                            >
-                                📺 Alle in einem Fenster
-                            </button>
-                            <button
-                                id="openLiveStreamsSeparate"
-                                class="btn btn-primary"
-                            >
-                                🖼️ Jeder in eigenem Fenster
-                            </button>
+                            <div class="channels-list" id="channelsList">
+                                <div class="loading">Lade Kanäle...</div>
+                            </div>
+
+                            <div class="button-group" style="margin-top: 10px">
+                                <button
+                                    id="openLiveStreams"
+                                    class="btn btn-primary"
+                                >
+                                    Alle Live in Tabs öffnen
+                                </button>
+                                <button
+                                    id="openLiveStreamsSeparate"
+                                    class="btn btn-primary"
+                                >
+                                    Als Grid öffnen
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

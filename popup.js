@@ -36,6 +36,8 @@ document.querySelectorAll(".tab").forEach((tab) => {
 // Video Speed Controller Logic
 let speedRules = {};
 let globalSpeed = 1.5;
+let currentZoomPreset = "none";
+let customZoomValue = 100;
 
 // Load settings
 chrome.storage.sync.get(["speedRules", "globalSpeed"], (result) => {
@@ -51,17 +53,34 @@ chrome.storage.sync.get(["speedRules", "globalSpeed"], (result) => {
 // Get current tab URL
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
   if (tabs[0]) {
-    const url = new URL(tabs[0].url);
-    const hostname = url.hostname;
-    document.getElementById("currentUrl").textContent = hostname;
+    try {
+      const url = new URL(tabs[0].url);
+      const hostname = url.hostname;
+      document.getElementById("currentUrl").textContent =
+        hostname || tabs[0].url;
 
-    // Check if there's a rule for this site
-    const currentSpeed = speedRules[hostname] || globalSpeed;
-    document.getElementById("currentSpeedSlider").value = currentSpeed;
-    document.getElementById("currentSpeedValue").textContent =
-      currentSpeed + "x";
+      // Check if there's a rule for this site
+      const currentSpeed = speedRules[hostname] || globalSpeed;
+      document.getElementById("currentSpeedSlider").value = currentSpeed;
+      document.getElementById("currentSpeedValue").textContent =
+        currentSpeed + "x";
+    } catch (e) {
+      // Handle special URLs (chrome://, edge://, about:, etc.)
+      document.getElementById("currentUrl").textContent = tabs[0].url || "-";
+    }
   }
 });
+
+// Helper function to check if URL supports content scripts
+function canInjectContentScript(url) {
+  if (!url) return false;
+  // Content scripts cannot run on chrome://, chrome-extension://, edge://, about:, etc.
+  return (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("file://")
+  );
+}
 
 // Speed slider handlers
 document.getElementById("currentSpeedSlider").addEventListener("input", (e) => {
@@ -70,11 +89,15 @@ document.getElementById("currentSpeedSlider").addEventListener("input", (e) => {
 
   // Apply immediately to current tab
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (tabs[0]) {
-      chrome.tabs.sendMessage(tabs[0].id, {
-        action: "setSpeed",
-        speed: value,
-      });
+    if (tabs[0] && canInjectContentScript(tabs[0].url)) {
+      chrome.tabs
+        .sendMessage(tabs[0].id, {
+          action: "setSpeed",
+          speed: value,
+        })
+        .catch(() => {
+          // Silently ignore if content script is not available
+        });
     }
   });
 });
@@ -98,12 +121,16 @@ document.getElementById("saveCurrentSpeed").addEventListener("click", () => {
       updateRulesList();
       // Notify content script
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-          chrome.tabs.sendMessage(tabs[0].id, {
-            action: "updateRules",
-            rules: speedRules,
-            globalSpeed: globalSpeed,
-          });
+        if (tabs[0] && canInjectContentScript(tabs[0].url)) {
+          chrome.tabs
+            .sendMessage(tabs[0].id, {
+              action: "updateRules",
+              rules: speedRules,
+              globalSpeed: globalSpeed,
+            })
+            .catch(() => {
+              // Silently ignore if content script is not available
+            });
         }
       });
     });
@@ -122,6 +149,150 @@ document.getElementById("addRuleBtn").addEventListener("click", () => {
       document.getElementById("newRuleUrl").value = "";
       document.getElementById("newRuleSpeed").value = "";
     });
+  }
+});
+
+// Function to update active zoom button
+function updateActiveZoomButton(zoomLevel) {
+  // Remove active class from all buttons
+  document.querySelectorAll(".zoom-btn").forEach((btn) => {
+    btn.classList.remove("active");
+  });
+
+  // Add active class to the appropriate button
+  if (zoomLevel === 120) {
+    document.getElementById("quickZoom21Soft").classList.add("active");
+  } else if (zoomLevel === 131) {
+    document.getElementById("quickZoom21").classList.add("active");
+  } else if (zoomLevel === 140) {
+    document.getElementById("quickZoom32Soft").classList.add("active");
+  } else if (zoomLevel === 200) {
+    document.getElementById("quickZoom32").classList.add("active");
+  } else {
+    // For 100 or any other value, default to Original
+    document.getElementById("quickZoomReset").classList.add("active");
+  }
+}
+
+// Quick Zoom Buttons
+// 21:9 Soft - Less aggressive crop
+document.getElementById("quickZoom21Soft").addEventListener("click", () => {
+  const zoomLevel = 120;
+  applyZoomLevel(zoomLevel);
+  updateActiveZoomButton(zoomLevel);
+  // Update custom slider to reflect the zoom
+  document.getElementById("customZoom").value = zoomLevel;
+  document.getElementById("customZoomValue").textContent = zoomLevel + "%";
+  customZoomValue = zoomLevel;
+  // Don't save zoom to storage - keep it session-only
+});
+
+// 21:9 - Exact ultrawide crop
+document.getElementById("quickZoom21").addEventListener("click", () => {
+  const zoomLevel = 131;
+  applyZoomLevel(zoomLevel);
+  updateActiveZoomButton(zoomLevel);
+  // Update custom slider to reflect the zoom
+  document.getElementById("customZoom").value = zoomLevel;
+  document.getElementById("customZoomValue").textContent = zoomLevel + "%";
+  customZoomValue = zoomLevel;
+  // Don't save zoom to storage - keep it session-only
+});
+
+// 32:9 Soft - Moderate crop
+document.getElementById("quickZoom32Soft").addEventListener("click", () => {
+  const zoomLevel = 140;
+  applyZoomLevel(zoomLevel);
+  updateActiveZoomButton(zoomLevel);
+  // Update custom slider to reflect the zoom
+  document.getElementById("customZoom").value = zoomLevel;
+  document.getElementById("customZoomValue").textContent = zoomLevel + "%";
+  customZoomValue = zoomLevel;
+  // Don't save zoom to storage - keep it session-only
+});
+
+// 32:9 - Full super ultrawide crop
+document.getElementById("quickZoom32").addEventListener("click", () => {
+  const zoomLevel = 200;
+  applyZoomLevel(zoomLevel);
+  updateActiveZoomButton(zoomLevel);
+  // Update custom slider to reflect the zoom
+  document.getElementById("customZoom").value = zoomLevel;
+  document.getElementById("customZoomValue").textContent = zoomLevel + "%";
+  customZoomValue = zoomLevel;
+  // Don't save zoom to storage - keep it session-only
+});
+
+document.getElementById("quickZoomReset").addEventListener("click", () => {
+  const zoomLevel = 100;
+  applyZoomLevel(zoomLevel);
+  updateActiveZoomButton(zoomLevel);
+  // Reset custom slider
+  document.getElementById("customZoom").value = 100;
+  document.getElementById("customZoomValue").textContent = "100%";
+  customZoomValue = 100;
+  // Don't save zoom to storage - keep it session-only
+});
+
+// Custom Zoom Controls
+document.getElementById("customZoom").addEventListener("input", (e) => {
+  customZoomValue = parseInt(e.target.value);
+  document.getElementById("customZoomValue").textContent =
+    customZoomValue + "%";
+  // Don't save zoom to storage - keep it session-only
+});
+
+document.getElementById("applyCustomZoom").addEventListener("click", () => {
+  applyZoomLevel(customZoomValue);
+});
+
+// Helper function to apply zoom
+function applyZoomLevel(zoomLevel) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && canInjectContentScript(tabs[0].url)) {
+      chrome.tabs
+        .sendMessage(tabs[0].id, {
+          action: "setZoom",
+          zoom: zoomLevel,
+        })
+        .catch(() => {
+          // Silently ignore - content script not available on this page
+        });
+    }
+  });
+}
+
+// Query current zoom from the active tab's content script
+chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  if (tabs[0] && canInjectContentScript(tabs[0].url)) {
+    chrome.tabs
+      .sendMessage(tabs[0].id, { action: "getZoom" })
+      .then((response) => {
+        if (response && response.zoom) {
+          customZoomValue = response.zoom;
+        } else {
+          customZoomValue = 100;
+        }
+        document.getElementById("customZoom").value = customZoomValue;
+        document.getElementById("customZoomValue").textContent =
+          customZoomValue + "%";
+        updateActiveZoomButton(customZoomValue);
+      })
+      .catch(() => {
+        // Fallback if content script is not ready or page was just loaded
+        customZoomValue = 100;
+        document.getElementById("customZoom").value = customZoomValue;
+        document.getElementById("customZoomValue").textContent =
+          customZoomValue + "%";
+        updateActiveZoomButton(customZoomValue);
+      });
+  } else {
+    // Default to 100 for non-content script pages
+    customZoomValue = 100;
+    document.getElementById("customZoom").value = customZoomValue;
+    document.getElementById("customZoomValue").textContent =
+      customZoomValue + "%";
+    updateActiveZoomButton(customZoomValue);
   }
 });
 

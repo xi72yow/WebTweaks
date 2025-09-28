@@ -20,6 +20,10 @@
 
     // Apply initial speed only (no zoom by default)
     setSpeed();
+
+    // Force apply speed after a short delay to ensure it takes effect
+    setTimeout(setSpeed, 100);
+    setTimeout(setSpeed, 500);
   });
 
   // Listen for messages from popup
@@ -61,6 +65,8 @@
   function setSpeed() {
     document.querySelectorAll("video, audio").forEach((el) => {
       el.playbackRate = currentSpeed;
+      // Also set defaultPlaybackRate to make it more persistent
+      el.defaultPlaybackRate = currentSpeed;
     });
   }
 
@@ -162,6 +168,7 @@
     (e) => {
       if (e.target.tagName === "VIDEO" || e.target.tagName === "AUDIO") {
         e.target.playbackRate = currentSpeed;
+        e.target.defaultPlaybackRate = currentSpeed;
 
         // Apply zoom to video if needed
         if (e.target.tagName === "VIDEO" && currentZoom !== 100) {
@@ -186,6 +193,20 @@
     },
     true,
   );
+
+  // Also handle loadstart and canplay events to ensure speed is set early
+  ["loadstart", "canplay", "loadeddata"].forEach((eventName) => {
+    document.addEventListener(
+      eventName,
+      (e) => {
+        if (e.target.tagName === "VIDEO" || e.target.tagName === "AUDIO") {
+          e.target.playbackRate = currentSpeed;
+          e.target.defaultPlaybackRate = currentSpeed;
+        }
+      },
+      true,
+    );
+  });
 
   // Periodic check for speed only (not zoom to avoid flickering)
   setInterval(() => {

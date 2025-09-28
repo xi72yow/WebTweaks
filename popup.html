@@ -951,39 +951,6 @@
                         </button>
                     </div>
 
-                    <div class="global-speed">
-                        <div
-                            style="
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                            "
-                        >
-                            <span>Standard-Geschwindigkeit:</span>
-                            <div
-                                style="
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 10px;
-                                "
-                            >
-                                <input
-                                    type="range"
-                                    id="globalSpeedSlider"
-                                    class="speed-slider"
-                                    min="0.25"
-                                    max="3"
-                                    step="0.01"
-                                    value="1.5"
-                                    style="width: 100px"
-                                />
-                                <span id="globalSpeedValue" class="speed-value"
-                                    >1.5x</span
-                                >
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Saved Rules Section -->
                     <div class="saved-rules-section">
                         <div class="section-header">
@@ -998,6 +965,46 @@
 
                         <div id="speedRules" class="speed-rules enhanced">
                             <div class="empty-state">No saved rules</div>
+                        </div>
+
+                        <!-- Default Speed Setting -->
+                        <div
+                            class="global-speed"
+                            style="
+                                margin-top: 12px;
+                                padding: 10px;
+                                background: #1a1a1a;
+                                border-radius: 6px;
+                            "
+                        >
+                            <div class="site-info" style="margin-bottom: 8px">
+                                <span style="font-size: 12px; color: #888"
+                                    >Standard-Geschwindigkeit:</span
+                                >
+                                <span
+                                    id="globalSpeedValue"
+                                    style="color: #4a9eff; font-weight: 500"
+                                    >1.5x</span
+                                >
+                            </div>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                "
+                            >
+                                <input
+                                    type="range"
+                                    id="globalSpeedSlider"
+                                    min="0.25"
+                                    max="3"
+                                    step="0.01"
+                                    value="1.5"
+                                    class="speed-slider"
+                                    style="flex: 1"
+                                />
+                            </div>
                         </div>
 
                         <!-- Add Rule Form -->

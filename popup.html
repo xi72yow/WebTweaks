@@ -562,6 +562,281 @@
             .button-group .btn {
                 flex: 1;
             }
+
+            /* Enhanced Rules Section Styles */
+            .saved-rules-section {
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid #333;
+            }
+
+            .section-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+                gap: 10px;
+            }
+
+            .section-header h4 {
+                margin: 0;
+                font-size: 14px;
+                color: #9ca3af;
+            }
+
+            .search-input {
+                flex: 1;
+                max-width: 180px;
+                padding: 6px 10px;
+                background: #1a1a1a;
+                border: 1px solid #333;
+                border-radius: 6px;
+                color: #fff;
+                font-size: 12px;
+            }
+
+            .search-input:focus {
+                border-color: #4a9eff;
+                outline: none;
+            }
+
+            .speed-rules.enhanced {
+                max-height: 200px;
+                overflow-y: auto;
+                background: #1a1a1a;
+                border-radius: 6px;
+                padding: 8px;
+                margin-bottom: 10px;
+            }
+
+            .speed-rules.enhanced::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .speed-rules.enhanced::-webkit-scrollbar-track {
+                background: #2a2a2a;
+                border-radius: 3px;
+            }
+
+            .speed-rules.enhanced::-webkit-scrollbar-thumb {
+                background: #4a4a4a;
+                border-radius: 3px;
+            }
+
+            /* Add Rule Controls */
+            .add-rule-controls {
+                margin-top: 10px;
+                padding: 10px;
+                background: #1a1a1a;
+                border-radius: 6px;
+            }
+
+            .input-row {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .pattern-input {
+                flex: 1;
+                padding: 6px 10px;
+                background: #222;
+                border: 1px solid #333;
+                border-radius: 4px;
+                color: #fff;
+                font-size: 12px;
+            }
+
+            .pattern-input.regex-mode {
+                font-family: monospace;
+            }
+
+            .speed-input-small {
+                width: 60px;
+                padding: 6px 8px;
+                background: #222;
+                border: 1px solid #333;
+                border-radius: 4px;
+                color: #fff;
+                font-size: 12px;
+            }
+
+            .rule-type-badge {
+                padding: 2px 6px;
+                background: #333;
+                border-radius: 3px;
+                font-size: 10px;
+                font-family: monospace;
+                color: #4a9eff;
+                margin-left: 8px;
+            }
+
+            /* Advanced Section Styles */
+            .advanced-section {
+                margin-top: 20px;
+                background: #1a1a1a;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .advanced-header {
+                padding: 12px 15px;
+                background: #222;
+                color: #9ca3af;
+                font-size: 13px;
+                cursor: pointer;
+                user-select: none;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .advanced-header:hover {
+                background: #252525;
+            }
+
+            .advanced-header::marker {
+                content: "";
+            }
+
+            .advanced-content {
+                padding: 15px;
+            }
+
+            .advanced-subsection {
+                margin-bottom: 20px;
+            }
+
+            .advanced-subsection:last-child {
+                margin-bottom: 0;
+            }
+
+            .advanced-subsection h5 {
+                margin: 0 0 8px 0;
+                font-size: 12px;
+                color: #9ca3af;
+                font-weight: 500;
+            }
+
+            .help-text {
+                font-size: 11px;
+                color: #666;
+                margin-bottom: 10px;
+            }
+
+            .regex-rule-form {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+
+            .regex-input {
+                flex: 1;
+                padding: 6px 8px;
+                background: #222;
+                border: 1px solid #333;
+                border-radius: 4px;
+                color: #fff;
+                font-size: 12px;
+                font-family: monospace;
+            }
+
+            .speed-input.small {
+                width: 50px;
+            }
+
+            .regex-rules-list {
+                background: #222;
+                border-radius: 4px;
+                padding: 8px;
+                min-height: 40px;
+            }
+
+            .regex-rule-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 6px;
+                background: #1a1a1a;
+                border-radius: 4px;
+                margin-bottom: 6px;
+                font-size: 12px;
+            }
+
+            .regex-pattern {
+                font-family: monospace;
+                color: #4a9eff;
+                flex: 1;
+            }
+
+            .zoom-control-advanced {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .zoom-control-advanced .speed-slider {
+                flex: 1;
+            }
+
+            .zoom-display {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .zoom-value {
+                min-width: 45px;
+                text-align: right;
+                color: #9ca3af;
+                font-size: 13px;
+            }
+
+            /* Improved rule item styles */
+            .rule-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 10px;
+                background: #222;
+                border-radius: 6px;
+                margin-bottom: 6px;
+                transition: background 0.2s;
+            }
+
+            .rule-item:hover {
+                background: #2a2a2a;
+            }
+
+            .rule-item.filtered-out {
+                display: none;
+            }
+
+            .rule-url {
+                font-size: 12px;
+                color: #e2e8f0;
+                flex: 1;
+                font-weight: 500;
+            }
+
+            .rule-speed {
+                color: #4a9eff;
+                font-size: 12px;
+                margin: 0 10px;
+                font-weight: 600;
+            }
+
+            .remove-btn {
+                padding: 4px 8px;
+                font-size: 14px;
+                opacity: 0.7;
+                transition: opacity 0.2s;
+            }
+
+            .remove-btn:hover {
+                opacity: 1;
+                background: #ff4444;
+            }
         </style>
     </head>
     <body>
@@ -571,7 +846,7 @@
 
             <div class="tabs">
                 <button class="tab active" data-tab="speed">
-                    ⚡ Video Speed
+                    🎬 Video Tweaks
                 </button>
                 <button class="tab" data-tab="twitch">🎮 Twitch</button>
             </div>
@@ -579,12 +854,17 @@
             <!-- Speed Tab -->
             <div id="speedTab" class="tab-content active">
                 <div class="section">
-                    <h3>⚡ Video Speed Controller</h3>
+                    <h3>🎬 Video Tweaks</h3>
 
                     <div class="current-site">
                         <div class="site-info">
-                            <span>Aktuelle Seite:</span>
-                            <span id="currentUrl" class="site-url">-</span>
+                            <span>Aktive Regel:</span>
+                            <span
+                                id="activeRule"
+                                class="site-url"
+                                style="color: #4ade80; font-family: monospace"
+                                >default</span
+                            >
                         </div>
                         <div class="speed-control">
                             <input
@@ -599,6 +879,22 @@
                             <span id="currentSpeedValue" class="speed-value"
                                 >1.5x</span
                             >
+                        </div>
+                        <div
+                            id="autoDetectIndicator"
+                            style="
+                                display: none;
+                                width: 100%;
+                                padding: 4px 8px;
+                                margin-bottom: 8px;
+                                background: #1a3d1a;
+                                border-radius: 4px;
+                                font-size: 11px;
+                                color: #4ade80;
+                                text-align: center;
+                            "
+                        >
+                            🎯 Auto-detected letterboxing
                         </div>
                         <div
                             class="zoom-buttons"
@@ -688,85 +984,106 @@
                         </div>
                     </div>
 
-                    <h4
-                        style="
-                            margin: 15px 0 10px 0;
-                            font-size: 14px;
-                            color: #666;
-                        "
-                    >
-                        Gespeicherte Regeln:
-                    </h4>
-                    <div id="speedRules" class="speed-rules">
-                        <div class="empty-state">Keine Regeln gespeichert</div>
-                    </div>
-
-                    <div class="add-rule-form">
-                        <input
-                            type="text"
-                            id="newRuleUrl"
-                            placeholder="URL-Pattern (z.B. youtube.com)"
-                        />
-                        <input
-                            type="number"
-                            id="newRuleSpeed"
-                            placeholder="1.5"
-                            min="0.25"
-                            max="3"
-                            step="0.01"
-                        />
-                        <button id="addRuleBtn" class="btn btn-add">+</button>
-                    </div>
-
-                    <!-- Custom Zoom Control -->
-                    <div
-                        style="
-                            margin-top: 20px;
-                            padding-top: 20px;
-                            border-top: 1px solid #333;
-                        "
-                    >
-                        <h4
-                            style="
-                                margin: 0 0 10px 0;
-                                font-size: 13px;
-                                color: #666;
-                            "
-                        >
-                            Custom Zoom
-                        </h4>
-                        <div
-                            style="
-                                display: flex;
-                                align-items: center;
-                                gap: 10px;
-                            "
-                        >
+                    <!-- Saved Rules Section -->
+                    <div class="saved-rules-section">
+                        <div class="section-header">
+                            <h4>📋 Saved Rules</h4>
                             <input
-                                type="range"
-                                id="customZoom"
-                                min="100"
-                                max="200"
-                                value="100"
-                                step="5"
-                                class="speed-slider"
-                                style="flex: 1"
+                                type="text"
+                                id="searchRules"
+                                placeholder="🔍 Search rules..."
+                                class="search-input"
                             />
-                            <span
-                                id="customZoomValue"
-                                class="speed-value"
-                                style="min-width: 45px"
-                                >100%</span
-                            >
-                            <button
-                                id="applyCustomZoom"
-                                class="btn btn-small"
-                                style="padding: 4px 12px"
-                            >
-                                Anwenden
-                            </button>
+                        </div>
+
+                        <div id="speedRules" class="speed-rules enhanced">
+                            <div class="empty-state">No saved rules</div>
+                        </div>
+
+                        <!-- Add Rule Form -->
+                        <div class="add-rule-controls">
+                            <div class="input-row">
+                                <input
+                                    type="text"
+                                    id="newPattern"
+                                    placeholder="(e.g. youtube.com or .*\.netflix\..*)"
+                                    class="pattern-input"
+                                />
+                                <input
+                                    type="number"
+                                    id="newSpeed"
+                                    placeholder="1.5"
+                                    min="0.25"
+                                    max="3"
+                                    step="0.01"
+                                    class="speed-input-small"
+                                />
+                                <button
+                                    id="addRuleBtn"
+                                    class="btn btn-primary"
+                                    title="Add Rule"
+                                    style="
+                                        padding: 5px 16px;
+                                        margin: 0;
+                                        border: 1px solid #333;
+                                        background: #222;
+                                    "
+                                >
+                                    Add
+                                </button>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Advanced Section -->
+                    <details class="advanced-section">
+                        <summary class="advanced-header">
+                            ⚙️ Advanced Settings
+                        </summary>
+
+                        <div class="advanced-content">
+                            <!-- Custom Video Zoom -->
+                            <div class="advanced-subsection">
+                                <h5>🔍 Custom Video Zoom</h5>
+                                <p class="help-text">
+                                    Zoom videos beyond standard aspect ratios
+                                </p>
+                                <div class="zoom-control-advanced">
+                                    <input
+                                        type="range"
+                                        id="customZoom"
+                                        min="100"
+                                        max="200"
+                                        value="100"
+                                        step="5"
+                                        class="speed-slider"
+                                    />
+                                    <div class="zoom-display">
+                                        <span
+                                            id="customZoomValue"
+                                            class="zoom-value"
+                                            >100%</span
+                                        >
+                                        <button
+                                            id="applyCustomZoom"
+                                            class="btn btn-small"
+                                        >
+                                            Apply
+                                        </button>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 12px">
+                                    <button
+                                        id="detectLetterbox"
+                                        class="btn btn-small btn-primary"
+                                        style="width: 100%; padding: 8px"
+                                    >
+                                        🎯 Auto-Detect Letterbox
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
                 </div>
             </div>
 

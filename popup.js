@@ -35,20 +35,85 @@ document.querySelectorAll(".tab").forEach((tab) => {
 
 // Video Speed Controller Logic
 let speedRules = {};
+let regexRules = [];
 let globalSpeed = 1.5;
 let currentZoomPreset = "none";
 let customZoomValue = 100;
 
 // Load settings
-chrome.storage.sync.get(["speedRules", "globalSpeed"], (result) => {
-  speedRules = result.speedRules || {};
-  globalSpeed = result.globalSpeed || 1.5;
+chrome.storage.sync.get(
+  ["speedRules", "globalSpeed", "regexRules"],
+  (result) => {
+    speedRules = result.speedRules || {};
+    regexRules = result.regexRules || [];
+    globalSpeed = result.globalSpeed || 1.5;
 
-  document.getElementById("globalSpeedSlider").value = globalSpeed;
-  document.getElementById("globalSpeedValue").textContent = globalSpeed + "x";
+    document.getElementById("globalSpeedSlider").value = globalSpeed;
+    document.getElementById("globalSpeedValue").textContent = globalSpeed + "x";
 
-  updateRulesList();
-});
+    updateRulesList();
+
+    // Set initial active rule display
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        try {
+          const url = new URL(tabs[0].url);
+          const activeRule = getActiveRule(tabs[0].url, url.hostname);
+          updateActiveRuleDisplay(activeRule.pattern);
+        } catch (e) {
+          updateActiveRuleDisplay("default");
+        }
+      }
+    });
+  },
+);
+
+// Helper function to update active rule display
+function updateActiveRuleDisplay(pattern) {
+  const ruleElement = document.getElementById("activeRule");
+  if (ruleElement) {
+    ruleElement.textContent = pattern;
+    ruleElement.title = pattern; // Full pattern in tooltip
+  }
+}
+
+// Helper function to find active rule for URL
+function getActiveRule(url, hostname) {
+  // Check regex patterns first (higher priority)
+  for (const rule of regexRules) {
+    try {
+      const regex = new RegExp(rule.pattern);
+      if (regex.test(url) || regex.test(hostname)) {
+        return {
+          type: "regex",
+          pattern: rule.pattern,
+          speed: rule.speed,
+        };
+      }
+    } catch (e) {
+      // Invalid regex, skip
+    }
+  }
+
+  // Then check exact domain rules
+  if (speedRules[hostname]) {
+    return {
+      type: "domain",
+      pattern: hostname,
+      speed: speedRules[hostname],
+    };
+  }
+
+  // Default to global
+  return {
+    type: "global",
+    pattern: "default",
+    speed: globalSpeed,
+  };
+}
+
+// Store current tab info globally for other functions
+let currentTabHostname = null;
 
 // Get current tab URL
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -56,17 +121,57 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     try {
       const url = new URL(tabs[0].url);
       const hostname = url.hostname;
-      document.getElementById("currentUrl").textContent =
-        hostname || tabs[0].url;
+      currentTabHostname = hostname;
 
-      // Check if there's a rule for this site
-      const currentSpeed = speedRules[hostname] || globalSpeed;
-      document.getElementById("currentSpeedSlider").value = currentSpeed;
+      // Find and display active rule
+      const activeRule = getActiveRule(tabs[0].url, hostname);
+      updateActiveRuleDisplay(activeRule.pattern);
+
+      // Set current speed from active rule
+      document.getElementById("currentSpeedSlider").value = activeRule.speed;
       document.getElementById("currentSpeedValue").textContent =
-        currentSpeed + "x";
+        activeRule.speed + "x";
+
+      // Check current zoom status
+      if (canInjectContentScript(tabs[0].url)) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            action: "getZoom",
+          },
+          (response) => {
+            if (response && response.zoom) {
+              updateActiveZoomButton(response.zoom);
+            }
+          },
+        );
+      }
     } catch (e) {
       // Handle special URLs (chrome://, edge://, about:, etc.)
-      document.getElementById("currentUrl").textContent = tabs[0].url || "-";
+      currentTabHostname = null;
+      document.getElementById("activeRule").textContent = "default";
+    }
+  }
+});
+
+// Listen for auto-detection messages
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "autoZoomDetected") {
+    // Show the auto-detect indicator
+    const indicator = document.getElementById("autoDetectIndicator");
+    if (indicator) {
+      indicator.style.display = "block";
+      updateActiveZoomButton(request.zoom);
+
+      // Update the custom zoom slider to match
+      document.getElementById("customZoom").value = request.zoom;
+      document.getElementById("customZoomValue").textContent =
+        request.zoom + "%";
+
+      // Hide the indicator after 5 seconds
+      setTimeout(() => {
+        indicator.style.display = "none";
+      }, 5000);
     }
   }
 });
@@ -112,13 +217,15 @@ document.getElementById("globalSpeedSlider").addEventListener("input", (e) => {
 
 // Save current speed for this site
 document.getElementById("saveCurrentSpeed").addEventListener("click", () => {
-  const hostname = document.getElementById("currentUrl").textContent;
+  const hostname = currentTabHostname;
   const speed = parseFloat(document.getElementById("currentSpeedSlider").value);
 
-  if (hostname && hostname !== "-") {
+  if (hostname) {
     speedRules[hostname] = speed;
     chrome.storage.sync.set({ speedRules }, () => {
       updateRulesList();
+      // Update active rule display to show the new rule
+      updateActiveRuleDisplay(hostname);
       // Notify content script
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0] && canInjectContentScript(tabs[0].url)) {
@@ -137,20 +244,124 @@ document.getElementById("saveCurrentSpeed").addEventListener("click", () => {
   }
 });
 
-// Add new rule
-document.getElementById("addRuleBtn").addEventListener("click", () => {
-  const url = document.getElementById("newRuleUrl").value.trim();
-  const speed = parseFloat(document.getElementById("newRuleSpeed").value);
+// New unified rule input with automatic regex detection
+const addRuleBtn = document.getElementById("addRuleBtn");
+const patternInput = document.getElementById("newPattern");
+const speedInput = document.getElementById("newSpeed");
 
-  if (url && !isNaN(speed) && speed >= 0.25 && speed <= 3) {
-    speedRules[url] = speed;
-    chrome.storage.sync.set({ speedRules }, () => {
-      updateRulesList();
-      document.getElementById("newRuleUrl").value = "";
-      document.getElementById("newRuleSpeed").value = "";
-    });
-  }
-});
+// Helper function to detect if a pattern is likely regex
+function isRegexPattern(pattern) {
+  // Check for common regex characters
+  const regexIndicators = [
+    "^",
+    "$",
+    ".*",
+    ".+",
+    "\\",
+    "[",
+    "]",
+    "(",
+    ")",
+    "|",
+    "?",
+    "*",
+    "+",
+    "{",
+    "}",
+  ];
+  return regexIndicators.some((indicator) => pattern.includes(indicator));
+}
+
+// Add new rule (unified for domain and regex with auto-detection)
+if (addRuleBtn) {
+  addRuleBtn.addEventListener("click", () => {
+    const pattern = patternInput.value.trim();
+    const speed = parseFloat(speedInput.value || "1.5");
+
+    if (pattern && !isNaN(speed) && speed >= 0.25 && speed <= 3) {
+      // Auto-detect if pattern is regex
+      const isRegex = isRegexPattern(pattern);
+
+      if (isRegex) {
+        // Test if pattern is valid regex
+        try {
+          new RegExp(pattern);
+          regexRules.push({ pattern, speed });
+          chrome.storage.sync.set({ regexRules }, () => {
+            updateRulesList();
+            patternInput.value = "";
+            speedInput.value = "";
+
+            // Check if new rule affects current page (respecting priority)
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+              if (tabs[0]) {
+                try {
+                  const url = new URL(tabs[0].url);
+                  const activeRule = getActiveRule(tabs[0].url, url.hostname);
+                  // Always update display with the actual active rule (which respects priority)
+                  updateActiveRuleDisplay(activeRule.pattern);
+                  // Update speed with the active rule's speed
+                  document.getElementById("currentSpeedSlider").value =
+                    activeRule.speed;
+                  document.getElementById("currentSpeedValue").textContent =
+                    activeRule.speed + "x";
+                } catch (e) {}
+              }
+
+              // Notify content script
+              if (tabs[0] && canInjectContentScript(tabs[0].url)) {
+                chrome.tabs
+                  .sendMessage(tabs[0].id, {
+                    action: "updateRegexRules",
+                    regexRules: regexRules,
+                  })
+                  .catch(() => {});
+              }
+            });
+          });
+        } catch (e) {
+          alert("Invalid regular expression pattern: " + e.message);
+        }
+      } else {
+        // Normal domain rule
+        speedRules[pattern] = speed;
+        chrome.storage.sync.set({ speedRules }, () => {
+          updateRulesList();
+          patternInput.value = "";
+          speedInput.value = "";
+
+          // Check if new rule affects current page (respecting priority)
+          chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs[0]) {
+              try {
+                const url = new URL(tabs[0].url);
+                const activeRule = getActiveRule(tabs[0].url, url.hostname);
+                // Always update display with the actual active rule (which respects priority)
+                updateActiveRuleDisplay(activeRule.pattern);
+                // Update speed with the active rule's speed (not necessarily the new rule)
+                document.getElementById("currentSpeedSlider").value =
+                  activeRule.speed;
+                document.getElementById("currentSpeedValue").textContent =
+                  activeRule.speed + "x";
+              } catch (e) {}
+            }
+
+            // Notify content script
+            if (tabs[0] && canInjectContentScript(tabs[0].url)) {
+              chrome.tabs
+                .sendMessage(tabs[0].id, {
+                  action: "updateRules",
+                  rules: speedRules,
+                  globalSpeed: globalSpeed,
+                })
+                .catch(() => {});
+            }
+          });
+        });
+      }
+    }
+  });
+}
 
 // Function to update active zoom button
 function updateActiveZoomButton(zoomLevel) {
@@ -297,33 +508,221 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 });
 
 // Update rules list display
-function updateRulesList() {
+function updateRulesList(searchTerm = "") {
   const container = document.getElementById("speedRules");
 
-  if (Object.keys(speedRules).length === 0) {
-    container.innerHTML =
-      '<div class="empty-state">Keine Regeln gespeichert</div>';
+  // Combine normal and regex rules
+  const allRules = [];
+
+  // Add normal domain rules
+  for (const [url, speed] of Object.entries(speedRules)) {
+    allRules.push({ pattern: url, speed, type: "domain" });
+  }
+
+  // Add regex rules
+  for (const rule of regexRules) {
+    allRules.push({ pattern: rule.pattern, speed: rule.speed, type: "regex" });
+  }
+
+  if (allRules.length === 0) {
+    container.innerHTML = '<div class="empty-state">No saved rules</div>';
     return;
   }
 
   container.innerHTML = "";
-  for (const [url, speed] of Object.entries(speedRules)) {
+  let hasVisibleRules = false;
+
+  // Sort rules: regex rules first (higher priority), then alphabetically
+  allRules.sort((a, b) => {
+    if (a.type !== b.type) {
+      return a.type === "regex" ? -1 : 1; // Regex rules first
+    }
+    return a.pattern.localeCompare(b.pattern);
+  });
+
+  for (const rule of allRules) {
+    // Filter by search term
+    if (
+      searchTerm &&
+      !rule.pattern.toLowerCase().includes(searchTerm.toLowerCase())
+    ) {
+      continue;
+    }
+    hasVisibleRules = true;
+
     const ruleDiv = document.createElement("div");
     ruleDiv.className = "rule-item";
+    const typeLabel =
+      rule.type === "regex" ? '<span class="rule-type-badge">regex</span>' : "";
+
     ruleDiv.innerHTML = `
-            <span class="rule-url">${url}</span>
-            <span class="rule-speed">${speed}x</span>
-            <button class="remove-btn" data-url="${url}">×</button>
-        `;
+      <span class="rule-url">${rule.pattern}${typeLabel}</span>
+      <span class="rule-speed">${rule.speed}×</span>
+      <button class="remove-btn" data-pattern="${rule.pattern}" data-type="${rule.type}" title="Remove rule">×</button>
+    `;
     container.appendChild(ruleDiv);
+  }
+
+  if (!hasVisibleRules) {
+    container.innerHTML =
+      '<div class="empty-state">No matching rules found</div>';
   }
 
   // Add remove handlers
   container.querySelectorAll(".remove-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      const url = e.target.dataset.url;
-      delete speedRules[url];
-      chrome.storage.sync.set({ speedRules }, updateRulesList);
+      const pattern = e.target.dataset.pattern;
+      const type = e.target.dataset.type;
+
+      if (type === "domain") {
+        delete speedRules[pattern];
+        chrome.storage.sync.set({ speedRules }, () =>
+          updateRulesList(searchTerm),
+        );
+      } else {
+        const index = regexRules.findIndex((r) => r.pattern === pattern);
+        if (index !== -1) {
+          regexRules.splice(index, 1);
+          chrome.storage.sync.set({ regexRules }, () => {
+            updateRulesList(searchTerm);
+          });
+        }
+      }
+
+      // Update active rule display and notify content script
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+          // Update UI to show new active rule after deletion
+          try {
+            const url = new URL(tabs[0].url);
+            const activeRule = getActiveRule(tabs[0].url, url.hostname);
+            updateActiveRuleDisplay(activeRule.pattern);
+            // Update speed display with new active rule
+            document.getElementById("currentSpeedSlider").value =
+              activeRule.speed;
+            document.getElementById("currentSpeedValue").textContent =
+              activeRule.speed + "x";
+          } catch (e) {
+            updateActiveRuleDisplay("default");
+          }
+
+          // Notify content script
+          if (canInjectContentScript(tabs[0].url)) {
+            chrome.tabs
+              .sendMessage(tabs[0].id, {
+                action: "updateRules",
+                rules: speedRules,
+                globalSpeed: globalSpeed,
+              })
+              .catch(() => {});
+
+            if (type === "regex") {
+              chrome.tabs
+                .sendMessage(tabs[0].id, {
+                  action: "updateRegexRules",
+                  regexRules: regexRules,
+                })
+                .catch(() => {});
+            }
+          }
+        }
+      });
+    });
+  });
+}
+
+// Add search functionality
+const searchInput = document.getElementById("searchRules");
+if (searchInput) {
+  searchInput.addEventListener("input", (e) => {
+    updateRulesList(e.target.value);
+  });
+}
+
+// Removed - now integrated into updateRulesList
+function updateRegexRulesList() {
+  const container = document.getElementById("regexRules");
+
+  if (!container) return; // Safety check
+
+  if (regexRules.length === 0) {
+    container.innerHTML =
+      '<div class="empty-state" style="font-size: 11px; color: #666;">No regex patterns configured</div>';
+    return;
+  }
+
+  container.innerHTML = "";
+
+  regexRules.forEach((rule, index) => {
+    const ruleDiv = document.createElement("div");
+    ruleDiv.className = "regex-rule-item";
+    ruleDiv.innerHTML = `
+      <span class="regex-pattern">${rule.pattern}</span>
+      <span class="rule-speed">${rule.speed}×</span>
+      <button class="remove-btn" data-index="${index}" title="Remove pattern">×</button>
+    `;
+    container.appendChild(ruleDiv);
+  });
+
+  // Add remove handlers
+  container.querySelectorAll(".remove-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const index = parseInt(e.target.dataset.index);
+      regexRules.splice(index, 1);
+      chrome.storage.sync.set({ regexRules }, updateRegexRulesList);
+
+      // Notify content script about regex rules update
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0] && canInjectContentScript(tabs[0].url)) {
+          chrome.tabs
+            .sendMessage(tabs[0].id, {
+              action: "updateRegexRules",
+              regexRules: regexRules,
+            })
+            .catch(() => {});
+        }
+      });
+    });
+  });
+}
+
+// Removed - now handled by unified addRuleBtn above
+
+// Auto-detect letterbox button
+const detectLetterboxBtn = document.getElementById("detectLetterbox");
+if (detectLetterboxBtn) {
+  detectLetterboxBtn.addEventListener("click", () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0] && canInjectContentScript(tabs[0].url)) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            action: "detectLetterbox",
+          },
+          (response) => {
+            if (response && response.zoom) {
+              // Update zoom controls with detected value
+              updateActiveZoomButton(response.zoom);
+              document.getElementById("customZoom").value = response.zoom;
+              document.getElementById("customZoomValue").textContent =
+                response.zoom + "%";
+              customZoomValue = response.zoom;
+
+              // Show indicator
+              const indicator = document.getElementById("autoDetectIndicator");
+              if (indicator) {
+                indicator.style.display = "block";
+                indicator.textContent = `🎯 Letterbox detected - Applied ${response.zoom}%`;
+                setTimeout(() => {
+                  indicator.style.display = "none";
+                }, 3000);
+              }
+            } else if (response && response.error) {
+              alert(response.error);
+            }
+          },
+        );
+      }
     });
   });
 }

@@ -39,6 +39,7 @@ let regexRules = [];
 let globalSpeed = 1.5;
 let currentZoomPreset = "none";
 let customZoomValue = 100;
+let zoomPositionValue = 50; // Default to center (50%)
 
 // Load settings
 chrome.storage.sync.get(
@@ -480,6 +481,15 @@ document.getElementById("customZoom").addEventListener("input", (e) => {
   // Don't save zoom to storage - keep it session-only
 });
 
+// Zoom Position Controls
+document.getElementById("zoomPosition").addEventListener("input", (e) => {
+  zoomPositionValue = parseInt(e.target.value);
+  document.getElementById("zoomPositionValue").textContent =
+    zoomPositionValue + "%";
+  // Apply position immediately
+  applyZoomPosition(zoomPositionValue);
+});
+
 document.getElementById("applyCustomZoom").addEventListener("click", () => {
   applyZoomLevel(customZoomValue);
 });
@@ -492,6 +502,23 @@ function applyZoomLevel(zoomLevel) {
         .sendMessage(tabs[0].id, {
           action: "setZoom",
           zoom: zoomLevel,
+          position: zoomPositionValue,
+        })
+        .catch(() => {
+          // Silently ignore - content script not available on this page
+        });
+    }
+  });
+}
+
+// Helper function to apply zoom position
+function applyZoomPosition(position) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && canInjectContentScript(tabs[0].url)) {
+      chrome.tabs
+        .sendMessage(tabs[0].id, {
+          action: "setZoomPosition",
+          position: position,
         })
         .catch(() => {
           // Silently ignore - content script not available on this page

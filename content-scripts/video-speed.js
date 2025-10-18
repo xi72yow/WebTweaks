@@ -10,6 +10,7 @@
   let regexRules = [];
   let globalSpeed = 1.5;
   let currentZoom = 100;
+  let currentZoomPosition = 50; // Default to center (50%)
 
   // Function to determine speed based on URL
   function getSpeedForUrl() {
@@ -109,10 +110,16 @@
       setSpeed();
     } else if (request.action === "setZoom") {
       currentZoom = request.zoom;
+      if (request.position !== undefined) {
+        currentZoomPosition = request.position;
+      }
+      applyZoom();
+    } else if (request.action === "setZoomPosition") {
+      currentZoomPosition = request.position;
       applyZoom();
     } else if (request.action === "getZoom") {
       // Return current zoom level to popup
-      sendResponse({ zoom: currentZoom });
+      sendResponse({ zoom: currentZoom, position: currentZoomPosition });
     } else if (request.action === "detectLetterbox") {
       // Manual letterbox detection triggered from popup
       const videos = document.querySelectorAll("video");
@@ -307,8 +314,11 @@
 
   function applyZoom() {
     document.querySelectorAll("video").forEach((video) => {
-      // Skip if already has the correct zoom to avoid reapplying
-      if (video.dataset.appliedZoom === String(currentZoom)) {
+      // Skip if already has the correct zoom and position to avoid reapplying
+      if (
+        video.dataset.appliedZoom === String(currentZoom) &&
+        video.dataset.appliedPosition === String(currentZoomPosition)
+      ) {
         return;
       }
 
@@ -320,6 +330,7 @@
       if (currentZoom === 100) {
         // 16:9 - Original aspect ratio, no changes
         delete video.dataset.appliedZoom;
+        delete video.dataset.appliedPosition;
         delete video.dataset.autoDetected;
 
         // Reset parent overflow
@@ -332,8 +343,11 @@
         // Apply zoom - scale the video to crop it
         const scale = currentZoom / 100;
         video.style.transform = `scale(${scale})`;
-        video.style.transformOrigin = "center center";
+        // Use currentZoomPosition for vertical positioning
+        // 0% = top, 50% = center, 100% = bottom
+        video.style.transformOrigin = `center ${currentZoomPosition}%`;
         video.dataset.appliedZoom = String(currentZoom);
+        video.dataset.appliedPosition = String(currentZoomPosition);
 
         // Hide overflow on parent
         const parent = video.parentElement;
@@ -394,8 +408,9 @@
         if (!video.dataset.appliedZoom) {
           const scale = currentZoom / 100;
           video.style.transform = `scale(${scale})`;
-          video.style.transformOrigin = "center center";
+          video.style.transformOrigin = `center ${currentZoomPosition}%`;
           video.dataset.appliedZoom = String(currentZoom);
+          video.dataset.appliedPosition = String(currentZoomPosition);
 
           const parent = video.parentElement;
           if (parent && parent.dataset.zoomModified !== "true") {
@@ -445,12 +460,14 @@
           const video = e.target;
           if (
             !video.dataset.appliedZoom ||
-            video.dataset.appliedZoom !== String(currentZoom)
+            video.dataset.appliedZoom !== String(currentZoom) ||
+            video.dataset.appliedPosition !== String(currentZoomPosition)
           ) {
             const scale = currentZoom / 100;
             video.style.transform = `scale(${scale})`;
-            video.style.transformOrigin = "center center";
+            video.style.transformOrigin = `center ${currentZoomPosition}%`;
             video.dataset.appliedZoom = String(currentZoom);
+            video.dataset.appliedPosition = String(currentZoomPosition);
 
             const parent = video.parentElement;
             if (parent && parent.dataset.zoomModified !== "true") {

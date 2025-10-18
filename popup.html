@@ -945,6 +945,26 @@
                                 32:9
                             </button>
                         </div>
+                        <div style="margin-top: 10px">
+                            <div style="font-size: 13px; margin-bottom: 8px">
+                                <span>Vertikale Position:</span>
+                            </div>
+                            <div class="speed-control">
+                                <input
+                                    type="range"
+                                    id="zoomPosition"
+                                    class="speed-slider"
+                                    min="0"
+                                    max="100"
+                                    value="50"
+                                    step="5"
+                                    title="0% = Oben, 50% = Mitte, 100% = Unten"
+                                />
+                                <span id="zoomPositionValue" class="speed-value"
+                                    >50%</span
+                                >
+                            </div>
+                        </div>
                         <button id="saveCurrentSpeed" class="btn btn-primary">
                             Für diese Seite speichern
                         </button>

@@ -1,6 +1,10 @@
 (function () {
   "use strict";
 
+  console.log(
+    "[VideoSpeed] 🔥 VERSION 2.0 WITH BASE DOMAIN MATCHING LOADED 🔥",
+  );
+
   let currentSpeed = 1.5;
   let speedRules = {};
   let regexRules = [];
@@ -12,25 +16,54 @@
     const hostname = window.location.hostname;
     const fullUrl = window.location.href;
 
-    // First check regex patterns (higher priority)
-    for (const rule of regexRules) {
-      try {
-        const regex = new RegExp(rule.pattern);
-        if (regex.test(fullUrl) || regex.test(hostname)) {
-          return rule.speed;
-        }
-      } catch (e) {
-        console.error("Invalid regex pattern:", rule.pattern);
-      }
+    console.log("[VideoSpeed] Checking speed for:", hostname);
+    console.log("[VideoSpeed] Available domain rules:", speedRules);
+    console.log("[VideoSpeed] Available regex rules:", regexRules);
+    console.log("[VideoSpeed] Global speed:", globalSpeed);
+
+    // Use shared matching logic (from globally loaded script)
+    const result = window.SpeedRulesMatcher.getSpeedForUrl(
+      fullUrl,
+      hostname,
+      speedRules,
+      regexRules,
+      globalSpeed,
+    );
+
+    // Log the result
+    if (result.matchType === "regex") {
+      console.log(
+        "[VideoSpeed] ✓ Matched regex rule:",
+        result.pattern,
+        "-> Speed:",
+        result.speed,
+      );
+    } else if (result.matchType === "domain-exact") {
+      console.log(
+        "[VideoSpeed] ✓ Matched domain rule:",
+        result.pattern,
+        "-> Speed:",
+        result.speed,
+      );
+    } else if (result.matchType === "domain-base") {
+      console.log(
+        "[VideoSpeed] ✓ Matched base domain rule:",
+        result.pattern,
+        "for",
+        hostname,
+        "(base:",
+        result.baseDomain,
+        ") -> Speed:",
+        result.speed,
+      );
+    } else {
+      console.log(
+        "[VideoSpeed] ✗ No rule matched, using global speed:",
+        result.speed,
+      );
     }
 
-    // Then check exact domain rules
-    if (speedRules[hostname]) {
-      return speedRules[hostname];
-    }
-
-    // Default to global speed
-    return globalSpeed;
+    return result.speed;
   }
 
   // Load settings from storage (only speed settings, not zoom)
@@ -58,7 +91,11 @@
 
   // Listen for messages from popup
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "setSpeed") {
+    if (request.action === "getSpeed") {
+      // Return the current speed to the popup
+      sendResponse({ speed: currentSpeed });
+      return true;
+    } else if (request.action === "setSpeed") {
       currentSpeed = request.speed;
       setSpeed();
     } else if (request.action === "updateRules") {
@@ -96,6 +133,60 @@
       }
 
       sendResponse({ error: "No letterboxing detected in videos" });
+    } else if (request.action === "openPiP") {
+      // Open video in Picture-in-Picture mode (main document only)
+      const videos = document.querySelectorAll("video");
+
+      if (videos.length === 0) {
+        sendResponse({ error: "No video found on this page" });
+        return true;
+      }
+
+      // Find the largest or playing video
+      let video = videos[0];
+      for (const v of videos) {
+        if (!v.paused || v.videoWidth > video.videoWidth) {
+          video = v;
+        }
+      }
+
+      console.log(
+        "[PiP] Found video, size:",
+        video.videoWidth,
+        "x",
+        video.videoHeight,
+      );
+
+      // Check if PiP is supported
+      if (!document.pictureInPictureEnabled) {
+        sendResponse({ error: "Picture-in-Picture is not supported" });
+        return true;
+      }
+
+      // Check if already in PiP
+      if (document.pictureInPictureElement) {
+        sendResponse({ error: "Video is already in Picture-in-Picture" });
+        return true;
+      }
+
+      // Remove disablePictureInPicture attribute if present (some sites block PiP)
+      if (video.hasAttribute("disablePictureInPicture")) {
+        video.removeAttribute("disablePictureInPicture");
+      }
+
+      // Request PiP
+      video
+        .requestPictureInPicture()
+        .then(() => {
+          console.log("[PiP] Success!");
+          sendResponse({ success: true });
+        })
+        .catch((error) => {
+          console.error("[PiP] Error:", error);
+          sendResponse({ error: `PiP failed: ${error.message}` });
+        });
+
+      return true; // Keep message channel open for async response
     }
   });
 

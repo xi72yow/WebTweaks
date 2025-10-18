@@ -79,36 +79,23 @@ function updateActiveRuleDisplay(pattern) {
 
 // Helper function to find active rule for URL
 function getActiveRule(url, hostname) {
-  // Check regex patterns first (higher priority)
-  for (const rule of regexRules) {
-    try {
-      const regex = new RegExp(rule.pattern);
-      if (regex.test(url) || regex.test(hostname)) {
-        return {
-          type: "regex",
-          pattern: rule.pattern,
-          speed: rule.speed,
-        };
-      }
-    } catch (e) {
-      // Invalid regex, skip
-    }
-  }
+  // Use shared matching logic (from globally loaded script)
+  const result = window.SpeedRulesMatcher.getSpeedForUrl(
+    url,
+    hostname,
+    speedRules,
+    regexRules,
+    globalSpeed,
+  );
 
-  // Then check exact domain rules
-  if (speedRules[hostname]) {
-    return {
-      type: "domain",
-      pattern: hostname,
-      speed: speedRules[hostname],
-    };
-  }
-
-  // Default to global
+  // Convert to old format for compatibility
   return {
-    type: "global",
-    pattern: "default",
-    speed: globalSpeed,
+    type:
+      result.matchType === "domain-exact" || result.matchType === "domain-base"
+        ? "domain"
+        : result.matchType,
+    pattern: result.pattern,
+    speed: result.speed,
   };
 }
 
@@ -127,10 +114,33 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const activeRule = getActiveRule(tabs[0].url, hostname);
       updateActiveRuleDisplay(activeRule.pattern);
 
-      // Set current speed from active rule
-      document.getElementById("currentSpeedSlider").value = activeRule.speed;
-      document.getElementById("currentSpeedValue").textContent =
-        activeRule.speed + "x";
+      // Get actual speed from content script (more reliable than calculating)
+      if (canInjectContentScript(tabs[0].url)) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          { action: "getSpeed" },
+          (response) => {
+            if (chrome.runtime.lastError || !response) {
+              // Fallback to calculated speed if content script not ready
+              document.getElementById("currentSpeedSlider").value =
+                activeRule.speed;
+              document.getElementById("currentSpeedValue").textContent =
+                activeRule.speed + "x";
+            } else {
+              // Use actual speed from content script
+              document.getElementById("currentSpeedSlider").value =
+                response.speed;
+              document.getElementById("currentSpeedValue").textContent =
+                response.speed + "x";
+            }
+          },
+        );
+      } else {
+        // Not a content script page, use calculated speed
+        document.getElementById("currentSpeedSlider").value = activeRule.speed;
+        document.getElementById("currentSpeedValue").textContent =
+          activeRule.speed + "x";
+      }
 
       // Check current zoom status
       if (canInjectContentScript(tabs[0].url)) {
@@ -140,6 +150,10 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             action: "getZoom",
           },
           (response) => {
+            if (chrome.runtime.lastError) {
+              // Silently ignore if content script not ready
+              return;
+            }
             if (response && response.zoom) {
               updateActiveZoomButton(response.zoom);
             }
@@ -207,12 +221,25 @@ document.getElementById("currentSpeedSlider").addEventListener("input", (e) => {
   });
 });
 
+// Throttle timer for global speed slider (saves every 200ms max)
+let globalSpeedSaveTimer = null;
+let canSaveGlobalSpeed = true;
+
 document.getElementById("globalSpeedSlider").addEventListener("input", (e) => {
   globalSpeed = parseFloat(e.target.value);
   document.getElementById("globalSpeedValue").textContent = globalSpeed + "x";
 
-  // Save global speed
-  chrome.storage.sync.set({ globalSpeed });
+  // Throttle: Save at most every 200ms
+  if (canSaveGlobalSpeed) {
+    chrome.storage.sync.set({ globalSpeed });
+    canSaveGlobalSpeed = false;
+
+    setTimeout(() => {
+      canSaveGlobalSpeed = true;
+      // Save the latest value after throttle period
+      chrome.storage.sync.set({ globalSpeed });
+    }, 200);
+  }
 });
 
 // Save current speed for this site
@@ -722,6 +749,47 @@ if (detectLetterboxBtn) {
             }
           },
         );
+      }
+    });
+  });
+}
+
+// Picture-in-Picture button
+const openPiPBtn = document.getElementById("openPiP");
+if (openPiPBtn) {
+  openPiPBtn.addEventListener("click", () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0] && canInjectContentScript(tabs[0].url)) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          { action: "openPiP" },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              alert(
+                "Could not connect to the page. Please reload the page and try again.",
+              );
+              return;
+            }
+
+            console.log("[PiP] Response received:", response);
+
+            // Only show error if it's NOT "No video found" (because iframe might have video)
+            if (
+              response &&
+              response.error &&
+              !response.error.includes("No video found")
+            ) {
+              alert(response.error);
+            } else if (response && response.success) {
+              console.log("[PiP] Successfully opened Picture-in-Picture");
+              // Optionally close popup after opening PiP
+              // window.close();
+            }
+            // If "No video found" - don't show alert, because iframe might handle it
+          },
+        );
+      } else {
+        alert("Picture-in-Picture is not available on this page");
       }
     });
   });

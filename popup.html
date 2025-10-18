@@ -874,10 +874,9 @@
                                 min="0.25"
                                 max="3"
                                 step="0.01"
-                                value="1.5"
                             />
                             <span id="currentSpeedValue" class="speed-value"
-                                >1.5x</span
+                                >-</span
                             >
                         </div>
                         <div
@@ -948,6 +947,13 @@
                         </div>
                         <button id="saveCurrentSpeed" class="btn btn-primary">
                             Für diese Seite speichern
+                        </button>
+                        <button
+                            id="openPiP"
+                            class="btn btn-primary"
+                            style="margin-top: 10px"
+                        >
+                            📺 Open in Picture-in-Picture
                         </button>
                     </div>
 
@@ -1189,6 +1195,7 @@
             </div>
         </div>
 
+        <script src="shared/speed-rules-matcher.js"></script>
         <script src="popup.js"></script>
     </body>
 </html>

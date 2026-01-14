@@ -29,6 +29,11 @@
       "js": ["content-scripts/insta-power.user.js"]
     },
     {
+      "matches": ["*://*.netflix.com/*"],
+      "js": ["content-scripts/netflix-autoskip.js"],
+      "run_at": "document_idle"
+    },
+    {
       "matches": ["<all_urls>"],
       "js": ["shared/speed-rules-matcher.js", "content-scripts/video-speed.js"],
       "run_at": "document_start",

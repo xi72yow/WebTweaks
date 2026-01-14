@@ -33,6 +33,39 @@ document.querySelectorAll(".tab").forEach((tab) => {
   });
 });
 
+// Netflix Auto-Skip Logic
+let netflixAutoSkip = true;
+
+// Load Netflix settings
+chrome.storage.sync.get(["netflixAutoSkip"], (result) => {
+  netflixAutoSkip = result.netflixAutoSkip !== false; // Default: enabled
+  const checkbox = document.getElementById("netflixAutoSkip");
+  if (checkbox) {
+    checkbox.checked = netflixAutoSkip;
+  }
+});
+
+// Netflix toggle handler
+const netflixToggle = document.getElementById("netflixAutoSkip");
+if (netflixToggle) {
+  netflixToggle.addEventListener("change", (e) => {
+    netflixAutoSkip = e.target.checked;
+    chrome.storage.sync.set({ netflixAutoSkip });
+
+    // Send to Netflix tab if open
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0] && tabs[0].url && tabs[0].url.includes("netflix.com")) {
+        chrome.tabs
+          .sendMessage(tabs[0].id, {
+            action: "setNetflixAutoSkip",
+            enabled: netflixAutoSkip,
+          })
+          .catch(() => {});
+      }
+    });
+  });
+}
+
 // Video Speed Controller Logic
 let speedRules = {};
 let regexRules = [];

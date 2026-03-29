@@ -5,7 +5,7 @@
     "[VideoSpeed] 🔥 VERSION 2.0 WITH BASE DOMAIN MATCHING LOADED 🔥",
   );
 
-  let currentSpeed = 1.5;
+  let currentSpeed = null; // null = not yet loaded from storage
   let speedRules = {};
   let regexRules = [];
   let globalSpeed = 1.5;
@@ -111,6 +111,7 @@
       setSpeed();
     } else if (request.action === "updateRules") {
       speedRules = request.rules;
+      if (request.regexRules) regexRules = request.regexRules;
       globalSpeed = request.globalSpeed;
       currentSpeed = getSpeedForUrl();
       setSpeed();
@@ -226,6 +227,8 @@
   });
 
   function setSpeed() {
+    // Don't apply speed until rules are loaded from storage
+    if (currentSpeed === null) return;
     document.querySelectorAll("video, audio").forEach((el) => {
       el.playbackRate = currentSpeed;
       // Also set defaultPlaybackRate to make it more persistent
@@ -462,8 +465,10 @@
     "play",
     (e) => {
       if (e.target.tagName === "VIDEO" || e.target.tagName === "AUDIO") {
-        e.target.playbackRate = currentSpeed;
-        e.target.defaultPlaybackRate = currentSpeed;
+        if (currentSpeed !== null) {
+          e.target.playbackRate = currentSpeed;
+          e.target.defaultPlaybackRate = currentSpeed;
+        }
 
         // Apply zoom to video if needed
         if (e.target.tagName === "VIDEO" && currentZoom !== 100) {
@@ -496,7 +501,10 @@
     document.addEventListener(
       eventName,
       (e) => {
-        if (e.target.tagName === "VIDEO" || e.target.tagName === "AUDIO") {
+        if (
+          currentSpeed !== null &&
+          (e.target.tagName === "VIDEO" || e.target.tagName === "AUDIO")
+        ) {
           e.target.playbackRate = currentSpeed;
           e.target.defaultPlaybackRate = currentSpeed;
         }

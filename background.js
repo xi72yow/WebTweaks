@@ -26,11 +26,12 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && tab.url) {
     // Send current settings to the tab
-    chrome.storage.sync.get(["speedRules", "globalSpeed"], (result) => {
+    chrome.storage.sync.get(["speedRules", "globalSpeed", "regexRules"], (result) => {
       chrome.tabs
         .sendMessage(tabId, {
           action: "updateRules",
           rules: result.speedRules || {},
+          regexRules: result.regexRules || [],
           globalSpeed: result.globalSpeed || 1.5,
         })
         .catch(() => {

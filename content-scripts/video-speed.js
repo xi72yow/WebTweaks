@@ -12,6 +12,16 @@
   let currentZoom = 100;
   let currentZoomPosition = 50; // Default to center (50%)
 
+  // Interactive zoom state (Ctrl+A + Wheel)
+  let ctrlPressed = false;
+  let aKeyPressed = false;
+  let activeZoomVideo = null;
+  let panX = 0;
+  let panY = 0;
+  let isDragging = false;
+  let lastMouseX = 0;
+  let lastMouseY = 0;
+
   // Function to determine speed based on URL
   function getSpeedForUrl() {
     const hostname = window.location.hostname;
@@ -503,4 +513,186 @@
       }
     });
   }, 1000);
+
+  // ── Interactive Zoom (Ctrl+A + Wheel to zoom, drag to pan) ──
+
+  function findVisibleVideo(target) {
+    // Check if target is or contains a video
+    let video = target.closest("video");
+    if (video) return video;
+
+    // Check if target is inside a video player wrapper
+    const container = target.closest(
+      "[class*='player'], [class*='video'], [id*='player'], [id*='video']",
+    );
+    if (container) {
+      video = container.querySelector("video");
+      if (video) return video;
+    }
+
+    // Fallback: find the largest visible video on the page
+    let best = null;
+    let bestArea = 0;
+    document.querySelectorAll("video").forEach((v) => {
+      const rect = v.getBoundingClientRect();
+      const area = rect.width * rect.height;
+      if (area > bestArea && rect.width > 0 && rect.height > 0) {
+        best = v;
+        bestArea = area;
+      }
+    });
+    return best;
+  }
+
+  function applyInteractiveZoom(video) {
+    if (currentZoom > 100) {
+      // Save original styles on first zoom
+      if (!video.dataset.izOriginalStyle) {
+        video.dataset.izOriginalStyle = video.getAttribute("style") || "";
+      }
+
+      // Make video fill viewport in a fixed overlay
+      video.style.position = "fixed";
+      video.style.top = "0";
+      video.style.left = "0";
+      video.style.width = "100vw";
+      video.style.height = "100vh";
+      video.style.zIndex = "2147483647";
+      video.style.objectFit = "contain";
+      video.style.background = "black";
+      video.style.cursor = isDragging ? "grabbing" : "grab";
+
+      // Apply zoom + pan
+      const scale = currentZoom / 100;
+      video.style.transform = `scale(${scale}) translate(${panX}px, ${panY}px)`;
+      video.style.transformOrigin = "center center";
+    } else {
+      // Reset to original
+      resetInteractiveZoom(video);
+    }
+  }
+
+  function resetInteractiveZoom(video) {
+    if (video && video.dataset.izOriginalStyle !== undefined) {
+      const orig = video.dataset.izOriginalStyle;
+      if (orig) {
+        video.setAttribute("style", orig);
+      } else {
+        video.removeAttribute("style");
+      }
+      delete video.dataset.izOriginalStyle;
+    }
+    panX = 0;
+    panY = 0;
+    activeZoomVideo = null;
+  }
+
+  // Track Ctrl and A key state
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      if (e.key === "Control") ctrlPressed = true;
+      if (e.key === "a" || e.key === "A") {
+        aKeyPressed = true;
+        // Prevent select-all when Ctrl+A is used for zoom
+        if (ctrlPressed) {
+          e.preventDefault();
+        }
+      }
+    },
+    true,
+  );
+
+  document.addEventListener(
+    "keyup",
+    (e) => {
+      if (e.key === "Control") ctrlPressed = false;
+      if (e.key === "a" || e.key === "A") aKeyPressed = false;
+    },
+    true,
+  );
+
+  // Ctrl+A + Wheel = zoom
+  document.addEventListener(
+    "wheel",
+    (e) => {
+      if (!ctrlPressed || !aKeyPressed) return;
+
+      // Always prevent browser scroll/zoom when Ctrl+A is held
+      e.preventDefault();
+      e.stopPropagation();
+
+      const video = activeZoomVideo || findVisibleVideo(e.target);
+      if (!video) return;
+
+      activeZoomVideo = video;
+
+      const zoomDelta = e.deltaY < 0 ? 10 : -10;
+      const newZoom = Math.max(100, Math.min(500, currentZoom + zoomDelta));
+      currentZoom = newZoom;
+
+      if (currentZoom <= 100) {
+        // Scrolled back to original - fully reset
+        currentZoom = 100;
+        resetInteractiveZoom(video);
+        return;
+      }
+
+      applyInteractiveZoom(video);
+    },
+    { passive: false, capture: true },
+  );
+
+  // Block clicks when Ctrl+A is held and zoomed (prevents video pause)
+  document.addEventListener(
+    "click",
+    (e) => {
+      if (ctrlPressed && aKeyPressed && activeZoomVideo && currentZoom > 100) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    },
+    true,
+  );
+
+  // Drag to pan when zoomed
+  document.addEventListener(
+    "mousedown",
+    (e) => {
+      if (!activeZoomVideo || currentZoom <= 100) return;
+      isDragging = true;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      activeZoomVideo.style.cursor = "grabbing";
+      e.preventDefault();
+    },
+    true,
+  );
+
+  document.addEventListener(
+    "mousemove",
+    (e) => {
+      if (!isDragging || !activeZoomVideo) return;
+
+      const scale = currentZoom / 100;
+      panX += (e.clientX - lastMouseX) / scale;
+      panY += (e.clientY - lastMouseY) / scale;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+
+      activeZoomVideo.style.transform = `scale(${scale}) translate(${panX}px, ${panY}px)`;
+    },
+    true,
+  );
+
+  document.addEventListener(
+    "mouseup",
+    () => {
+      if (isDragging && activeZoomVideo) {
+        isDragging = false;
+        activeZoomVideo.style.cursor = "grab";
+      }
+    },
+    true,
+  );
 })();

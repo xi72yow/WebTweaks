@@ -7,6 +7,11 @@ let observer = null;
 const selectors = [
   "[data-uia='next-episode-seamless-button']",
   "[data-uia='next-episode-seamless-button-draining']",
+  "[data-uia='player-skip-intro']",
+  "[data-uia='player-skip-recap']",
+  "[data-uia='player-skip-credits']",
+  "[data-uia='player-skip-preplay']",
+  ".watch-video--skip-content button",
   ".watch-video--skip-content-button",
   ".watch-video--skip-preplay-button"
 ];
